@@ -3,7 +3,10 @@ package tech.buildrun.springsecurity.models;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import jakarta.persistence.*;
+import tech.buildrun.springsecurity.controller.dto.LoginRequest;
 
 @Entity
 @Table(name = "tb_users")
@@ -60,6 +63,8 @@ public class User {
         this.roles = roles;
     }
 
-    
+    public boolean isLoginCorrect(LoginRequest loginRequest, PasswordEncoder passwordEncoder) {
+        return passwordEncoder.matches(loginRequest.password(), this.password); //compara a senha criptografada com a senha do login descriptografada
+    }
     
 }
