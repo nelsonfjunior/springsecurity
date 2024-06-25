@@ -1,6 +1,7 @@
 package tech.buildrun.springsecurity.controller;
 
 import java.time.Instant;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import tech.buildrun.springsecurity.controller.dto.LoginRequest;
 import tech.buildrun.springsecurity.controller.dto.LoginResponse;
+import tech.buildrun.springsecurity.models.Role;
 import tech.buildrun.springsecurity.repositories.UserRepository;
 
 @RestController
@@ -42,11 +44,17 @@ public class TokenController {
         var now = Instant.now();
         var expiresIn = 300L; //5 minutos - 300 segundos
 
+        var scopes = user.get().getRoles() 
+                    .stream() 
+                    .map(Role::getName)  
+                    .collect(Collectors.joining(" ")); //pega os roles do usuario e junta em uma string
+
         var claims = JwtClaimsSet.builder()
             .issuer("my-backend") //quem emitiu o token
             .subject(user.get().getUserId().toString()) //quem é o dono do token
             .expiresAt(now.plusSeconds(expiresIn)) //quando o token expira(agora + 5 minutos)
             .issuedAt(now) //quando o token foi emitido(agora)
+            .claim("scope", scopes)
             .build(); //cria o objeto de claims
 
         var jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue(); //gera o token
